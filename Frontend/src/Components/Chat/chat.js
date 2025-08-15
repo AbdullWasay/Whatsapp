@@ -59,7 +59,7 @@ const token = localStorage.getItem('token'); // Or however you're storing it
 
   const loadChats = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/chat', {
+      const response = await axios.get(process.env.REACT_APP_BACKEND_URL+'api/chat', {
   headers: {
     Authorization: `Bearer ${token}`
   }
@@ -74,7 +74,7 @@ const token = localStorage.getItem('token'); // Or however you're storing it
 
   const loadMessages = async (chatId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/messages/${chatId}`, {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}api/messages/${chatId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -118,7 +118,7 @@ const token = localStorage.getItem('token'); // Or however you're storing it
         }
       }
 
-      const response = await axios.post('http://localhost:5000/api/chat', chatData);
+      const response = await axios.post(process.env.REACT_APP_BACKEND_URL+'api/chat', chatData);
 
       setChats(prev => [response.data, ...prev]);
       setShowUserSearch(false);

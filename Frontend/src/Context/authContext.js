@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     const loadUser = async () => {
       if (state.token) {
         try {
-          const response = await axios.get('http://localhost:5000/api/auth/me');
+          const response = await axios.get(process.env.REACT_APP_BACKEND_URL+'api/auth/me');
           dispatch({ type: 'LOAD_USER', payload: response.data.user });
         } catch (error) {
           dispatch({ type: 'AUTH_ERROR' });
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(process.env.REACT_APP_BACKEND_URL+'api/auth/login', {
         email,
         password
       });
@@ -107,10 +107,10 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      console.log('Making registration request to:', 'http://localhost:5000/api/auth/register');
+      console.log('Making registration request to:', process.env.REACT_APP_BACKEND_URL+'api/auth/register');
       console.log('Request data:', { name, email, password: password.length + ' chars' });
 
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(process.env.REACT_APP_BACKEND_URL+'api/auth/register', {
         name,
         email,
         password
@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/auth/logout');
+      await axios.post(process.env.REACT_APP_BACKEND_URL+'api/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

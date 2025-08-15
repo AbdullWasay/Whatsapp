@@ -11,7 +11,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && token) {
       // Connect to socket server
-      socket.current = io('http://localhost:5000', {
+      socket.current = io(process.env.REACT_APP_BACKEND_URL, {
         auth: {
           token: token
         }
