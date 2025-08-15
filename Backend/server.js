@@ -1,7 +1,15 @@
 require('dotenv').config();
+const http = require('http');
+const socketIo = require('socket.io');
 const connectDB = require('./config/database');
 const express = require('express');
+const authRoutes = require('./routes/auth');
+const { handleConnection } = require('./socket/socketHandler');
+const chatRoutes = require('./routes/chat');
+const messagesRoutes = require('./routes/messages');
+const userRoutes = require('./routes/user');
 const cors = require('./config/cors');
+
 const app = express();
 connectDB();
 
@@ -10,6 +18,29 @@ app.use(express.json());
 app.use(cors); 
 
 
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/messages', messagesRoutes);
+app.use('/api/chat', chatRoutes);
+
 // Start server
-const PORT = process.env.BACKEND_PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+//Integrating Socket.io
+const server = http.createServer(app);
+
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+};
+
+// Socket.IO setup
+const io = socketIo(server, {
+  cors: corsOptions
+});
+
+
+// Socket.IO connection handling
+handleConnection(io);
+
+server.listen(process.env.BACKEND_PORT, () => console.log(`Server running on port ${process.env.BACKEND_PORT}`));
