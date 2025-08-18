@@ -10,6 +10,9 @@
   color: white;
   padding: 15px 20px;
   border-bottom: 1px solid #128c7e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .chat-info h2 {
@@ -24,6 +27,29 @@
   opacity: 0.9;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-members-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-members-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -36,6 +62,11 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
+}
+
+.sent {
+  justify-content: flex-end;
+  margin-left: 60px;
 }
 
 .message.sent {

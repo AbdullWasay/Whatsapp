@@ -64,8 +64,10 @@ const ChatList = ({ chats, selectedChat, onChatSelect, currentUser }) => {
             </div>
             
             <div className="chat-info">
-              <div className="chat-header">
-                <h3 className="chat-name">{getChatName(chat)}</h3>
+              <div className="chat-header-2">
+                <h3 className={`chat-name ${chat.isGroup ? 'group' : ''}`}>
+                  {getChatName(chat)}
+                </h3>
                 <span className="chat-time">
                   {chat.updatedAt && formatTime(chat.updatedAt)}
                 </span>

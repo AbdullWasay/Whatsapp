@@ -22,6 +22,8 @@ router.get('/:chatId', auth, async (req, res) => {
 
     const messages = await Message.find({ chatId })
       .populate('senderId', 'name')
+      .populate('systemMessageData.addedBy', 'name')
+      .populate('systemMessageData.addedMembers', 'name')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -62,7 +64,9 @@ router.post('/', auth, async (req, res) => {
     await chat.save();
 
     const populatedMessage = await Message.findById(message._id)
-      .populate('senderId', 'name ');
+      .populate('senderId', 'name')
+      .populate('systemMessageData.addedBy', 'name')
+      .populate('systemMessageData.addedMembers', 'name');
 
     res.status(201).json(populatedMessage);
   } catch (error) {

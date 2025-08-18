@@ -4,6 +4,19 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get all users (excluding current user)
+router.get('/', auth, async (req, res) => {
+  try {
+    const users = await User.find({
+      _id: { $ne: req.user._id }
+    }).select('name email bio status lastSeen').limit(50);
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Search users to start chat
 router.get('/search', auth, async (req, res) => {
   try {

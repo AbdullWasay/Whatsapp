@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../Context/authContext';
 import { useSocket } from '../../Context/socketContext';
 import '../../css/Chat.css';
+import GroupMemberSearch from '../User/groupMemberSearch';
 import UserProfile from '../User/userProfile';
 import UserSearch from '../User/userSearch';
 import ChatHeader from './chatHeader';
@@ -15,6 +16,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showGroupMemberSearch, setShowGroupMemberSearch] = useState(false);
   const [loading, setLoading] = useState(true);
 const token = localStorage.getItem('token'); // Or however you're storing it
   const { user, logout } = useAuth();
@@ -42,17 +44,40 @@ const token = localStorage.getItem('token'); // Or however you're storing it
       socket.on('userStatusUpdate', (data) => {
         setChats(prev => prev.map(chat => ({
           ...chat,
-          members: chat.members.map(member => 
-            member._id === data.userId 
+          members: chat.members.map(member =>
+            member._id === data.userId
               ? { ...member, status: data.status, lastSeen: data.lastSeen }
               : member
           )
         })));
       });
 
+      socket.on('groupMembersAdded', (data) => {
+        console.log('Frontend: Received groupMembersAdded event', data);
+
+        if (selectedChat && selectedChat._id === data.chatId) {
+          // Reload the selected chat to get updated member list
+          loadChatDetails(data.chatId);
+        }
+
+        // Update chat list
+        setChats(prev => prev.map(chat =>
+          chat._id === data.chatId
+            ? { ...chat, updatedAt: new Date() }
+            : chat
+        ));
+      });
+
+      socket.on('error', (error) => {
+        console.error('Socket error:', error);
+        alert(error.message || 'An error occurred');
+      });
+
       return () => {
         socket.off('newMessage');
         socket.off('userStatusUpdate');
+        socket.off('groupMembersAdded');
+        socket.off('error');
       };
     }
   }, [socket, selectedChat]);
@@ -104,6 +129,27 @@ const token = localStorage.getItem('token'); // Or however you're storing it
     }
   };
 
+  const loadChatDetails = async (chatId) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}api/chat/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (selectedChat && selectedChat._id === chatId) {
+        setSelectedChat(response.data);
+      }
+
+      // Update the chat in the chats list
+      setChats(prev => prev.map(chat =>
+        chat._id === chatId ? response.data : chat
+      ));
+    } catch (error) {
+      console.error('Error loading chat details:', error);
+    }
+  };
+
   const handleCreateChat = async (userIds, isGroup = false, groupName = '', groupPicture = '') => {
     try {
       const chatData = {
@@ -125,6 +171,26 @@ const token = localStorage.getItem('token'); // Or however you're storing it
       handleChatSelect(response.data);
     } catch (error) {
       console.error('Error creating chat:', error);
+    }
+  };
+
+  const handleAddMembers = async (memberIds) => {
+    if (!selectedChat || !selectedChat.isGroup) return;
+
+    console.log('Frontend: Adding members', { memberIds, chatId: selectedChat._id });
+
+    try {
+      if (socket) {
+        socket.emit('addGroupMembers', {
+          chatId: selectedChat._id,
+          memberIds
+        });
+      }
+
+      setShowGroupMemberSearch(false);
+    } catch (error) {
+      console.error('Error adding members:', error);
+      throw error;
     }
   };
 
@@ -163,6 +229,7 @@ const token = localStorage.getItem('token'); // Or however you're storing it
             onSendMessage={handleSendMessage}
             currentUser={user}
             socket={socket}
+            onAddMembers={() => setShowGroupMemberSearch(true)}
           />
         ) : (
           <div className="no-chat-selected">
@@ -184,6 +251,15 @@ const token = localStorage.getItem('token'); // Or however you're storing it
       {showProfile && (
         <UserProfile
           onClose={() => setShowProfile(false)}
+        />
+      )}
+
+      {showGroupMemberSearch && selectedChat && selectedChat.isGroup && (
+        <GroupMemberSearch
+          onClose={() => setShowGroupMemberSearch(false)}
+          onAddMembers={handleAddMembers}
+          currentMembers={selectedChat.members}
+          chatId={selectedChat._id}
         />
       )}
     </div>

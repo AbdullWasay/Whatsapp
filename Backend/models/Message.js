@@ -13,6 +13,28 @@ const MessageSchema= mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Chat'
     },
+    messageType:{
+        type:String,
+        enum:['text', 'system', 'file', 'image'],
+        default:'text'
+    },
+    systemMessageType:{
+        type:String,
+        enum:['member_added', 'member_removed', 'group_created'],
+        required: function() {
+            return this.messageType === 'system';
+        }
+    },
+    systemMessageData:{
+        addedBy: {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User'
+        },
+        addedMembers: [{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User'
+        }]
+    },
     createdAt:{
         type:Date,
         default:Date.now

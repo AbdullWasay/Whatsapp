@@ -109,15 +109,80 @@ const handleConnection = (io) => {
     });
 
 
+    // Handle adding members to group
+    socket.on('addGroupMembers', async (data) => {
+      try {
+        const { chatId, memberIds } = data;
+
+        console.log('Socket: Adding members to group', { chatId, memberIds, userId: socket.userId });
+
+        // Verify user is member of the group
+        const chat = await Chat.findOne({
+          _id: chatId,
+          isGroup: true,
+          members: socket.userId
+        });
+
+        if (!chat) {
+          console.log('Socket: Group not found or user not a member');
+          socket.emit('error', { message: 'Group not found or you are not a member' });
+          return;
+        }
+
+        console.log('Socket: Current chat members:', chat.members.map(m => m.toString()));
+
+        // Filter out members that are already in the group
+        const newMemberIds = memberIds.filter(memberId =>
+          !chat.members.some(existingMember => existingMember.toString() === memberId.toString())
+        );
+
+        console.log('Socket: New members to add:', newMemberIds);
+
+        if (newMemberIds.length === 0) {
+          console.log('Socket: All selected users are already members');
+          socket.emit('error', { message: 'All selected users are already members of this group' });
+          return;
+        }
+
+        // Add new members to the group
+        chat.members.push(...newMemberIds);
+        chat.updatedAt = new Date();
+        await chat.save();
+
+        // Add new members to the chat room
+        newMemberIds.forEach(memberId => {
+          const memberSocketId = connectedUsers.get(memberId);
+          if (memberSocketId) {
+            const memberSocket = io.sockets.sockets.get(memberSocketId);
+            if (memberSocket) {
+              memberSocket.join(chatId);
+            }
+          }
+        });
+
+        // Emit to all users in the chat (including new members)
+        io.to(chatId).emit('groupMembersAdded', {
+          chatId,
+          addedMembers: newMemberIds,
+          addedBy: socket.userId
+        });
+
+        console.log(`Members added to group ${chatId} by ${socket.user.name}`);
+      } catch (error) {
+        socket.emit('error', { message: 'Failed to add members' });
+        console.error('Add members error:', error);
+      }
+    });
+
     // Handle disconnect
     socket.on('disconnect', async () => {
       console.log(`User ${socket.user.name} disconnected`);
-      
+
       // Remove from connected users
       connectedUsers.delete(socket.userId);
-      
+
       // Update user status to offline
-      await User.findByIdAndUpdate(socket.userId, { 
+      await User.findByIdAndUpdate(socket.userId, {
         status: 'offline',
         lastSeen: new Date()
       });

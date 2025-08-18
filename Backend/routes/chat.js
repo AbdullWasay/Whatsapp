@@ -84,4 +84,53 @@ router.post('/', auth, async (req, res) => {
 
 
 
+// Add members to group
+router.post('/:chatId/add-members', auth, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { memberIds } = req.body;
+
+    if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+      return res.status(400).json({ message: 'Member IDs are required' });
+    }
+
+    // Find the chat and verify it's a group
+    const chat = await Chat.findOne({
+      _id: chatId,
+      isGroup: true,
+      members: req.user._id
+    });
+
+    if (!chat) {
+      return res.status(404).json({ message: 'Group chat not found or you are not a member' });
+    }
+
+    // Filter out members that are already in the group
+    const newMemberIds = memberIds.filter(memberId =>
+      !chat.members.some(existingMember => existingMember.toString() === memberId)
+    );
+
+    if (newMemberIds.length === 0) {
+      return res.status(400).json({ message: 'All selected users are already members of this group' });
+    }
+
+    // Add new members to the group
+    chat.members.push(...newMemberIds);
+    chat.updatedAt = new Date();
+    await chat.save();
+
+    // Populate the updated chat
+    const updatedChat = await Chat.findById(chatId)
+      .populate('members', 'name email bio status lastSeen');
+
+    res.json({
+      message: 'Members added successfully',
+      chat: updatedChat,
+      addedMembers: newMemberIds
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;
