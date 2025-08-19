@@ -15,8 +15,10 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors); 
+app.use(cors);
 
+// Serve static files from assets directory
+app.use('/assets', express.static('assets'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);

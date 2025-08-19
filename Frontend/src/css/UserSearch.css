@@ -28,8 +28,8 @@
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
-  background: #25d366;
-  color: white;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .back-button {

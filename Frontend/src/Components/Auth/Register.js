@@ -1,25 +1,37 @@
+
 import { useState } from 'react';
 import { useAuth } from '../../Context/authContext';
 import '../../css/Login.css';
+
+
 
 const Register = ({ onToggleMode }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    profilePicture: null,
     password: '',
     confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
   const { register } = useAuth();
 
+
   const handleChange = (e) => {
+  if (e.target.name === "profilePicture") {
+    setFormData({
+      ...formData,
+      profilePicture: e.target.files[0] 
+    });
+  } else {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
+  }
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,15 +49,25 @@ const Register = ({ onToggleMode }) => {
 
     setLoading(true);
 
-    try {
-      const result = await register(formData.name, formData.email, formData.password);
-      if (!result.success) {
-        setError(result.message);
-      }
-    } catch {
-      setError('Registration failed. Please try again.');
+try {
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+
+    // Only append profile picture if one was selected
+    if (formData.profilePicture) {
+      data.append("profilePicture", formData.profilePicture);
     }
 
+    const result = await register(data);
+    if (!result.success) {
+      setError(result.message);
+    }
+  } catch (error) {
+    console.error("Registration error:", error);
+    setError("Registration failed. Please try again.");
+  }
     setLoading(false);
   };
 
@@ -79,6 +101,17 @@ const Register = ({ onToggleMode }) => {
               value={formData.email}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="profilePicture">Profile Picture (Optional)</label>
+            <input
+              type="file"
+              name="profilePicture"
+              id="profilePicture"
+              accept=".png,.jpg,.jpeg"
+              onChange={handleChange}
             />
           </div>
 

@@ -10,6 +10,7 @@ import ChatHeader from './chatHeader';
 import ChatList from './chatList';
 import ChatWindow from './chatWindow';
 
+
 const Chat = () => {
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -18,9 +19,10 @@ const Chat = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showGroupMemberSearch, setShowGroupMemberSearch] = useState(false);
   const [loading, setLoading] = useState(true);
-const token = localStorage.getItem('token'); // Or however you're storing it
+const token = localStorage.getItem('token'); 
   const { user, logout } = useAuth();
   const { socket } = useSocket();
+
 
   useEffect(() => {
     loadChats();

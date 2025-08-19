@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import '../../css/ChatHeader.css';
-
+import { useTheme } from "../../Context/themeContext";
+import "../../css/ChatHeader.css";
 const ChatHeader = ({ user, onNewChat, onShowProfile, onLogout }) => {
   const [showMenu, setShowMenu] = useState(false);
+ const { theme, toggleTheme } = useTheme();
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
@@ -14,12 +15,20 @@ const ChatHeader = ({ user, onNewChat, onShowProfile, onLogout }) => {
   };
 
   return (
-    <div className="chat-header">
+    <div className="chat-headerr">
       <div className="header-left">
         <div className="user-info" onClick={() => handleMenuItemClick(onShowProfile)}>
           <div className="user-avatar">
             {user?.profilePicture ? (
-              <img src={user.profilePicture} alt={user.name} />
+           
+           
+              <img 
+  src={`${process.env.REACT_APP_BACKEND_URL}${user.profilePicture}`} 
+  alt={user.name} 
+/>
+
+
+
             ) : (
               <div className="avatar-placeholder">
                 {user?.name?.charAt(0).toUpperCase()}
@@ -30,7 +39,20 @@ const ChatHeader = ({ user, onNewChat, onShowProfile, onLogout }) => {
         </div>
       </div>
 
+
+
       <div className="header-actions">
+       
+         <button 
+         className="action-btn new-chat-btn"
+          title="Mode"
+          onClick={toggleTheme}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+  <path d="M21 12.79A9 9 0 0111.21 3a7 7 0 000 14 9 9 0 009.79-4.21z"/>
+</svg>
+
+      </button>
+       
         <button 
           className="action-btn new-chat-btn"
           onClick={onNewChat}
@@ -42,6 +64,8 @@ const ChatHeader = ({ user, onNewChat, onShowProfile, onLogout }) => {
         </button>
 
         <div className="menu-container">
+
+          
           <button 
             className="action-btn menu-btn"
             onClick={handleMenuToggle}

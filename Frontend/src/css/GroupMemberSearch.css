@@ -37,7 +37,7 @@
   font-size: 1.3rem;
 }
 
-.close-button {
+.close-button-group {
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -52,7 +52,7 @@
   justify-content: center;
 }
 
-.close-button:hover {
+.close-button-group:hover {
   background: #f0f0f0;
 }
 
@@ -247,13 +247,13 @@
   background: #ccc;
 }
 
-.actions {
+.actions-group {
   padding: 20px;
   border-top: 1px solid #e0e0e0;
   background: #f8f9fa;
 }
 
-.add-members-btn {
+.add-members-btn-group {
   width: 100%;
   padding: 12px;
   background: #25d366;
@@ -266,11 +266,11 @@
   transition: background-color 0.2s ease;
 }
 
-.add-members-btn:hover:not(:disabled) {
-  background: #35f47b;
+.add-members-btn-group:hover:not(:disabled) {
+  background: #25d366;
 }
 
-.add-members-btn:disabled {
+.add-members-btn-group:disabled {
   background: #ccc;
   cursor: not-allowed;
 }

@@ -2,8 +2,24 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-
+const multer= require('multer');
 const router = express.Router();
+
+
+
+// configure multer to save files in /assets folder
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "assets/"); // save in /assets
+  },
+  filename: (req, file, cb) => {
+    // unique filename: timestamp-originalname
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload=multer({storage});
+
 
 // Generate JWT Token Function
 const generateToken = (userId) => {
@@ -17,6 +33,7 @@ router.get('/me', auth, async (req, res) => {
         id: req.user._id,
         name: req.user.name,
         email: req.user.email,
+        profilePicture: req.user.profilePicture,
         bio: req.user.bio,
         status: req.user.status,
         lastSeen: req.user.lastSeen
@@ -27,37 +44,47 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
-// Register
-router.post('/register', async (req, res) => {
+router.post("/register", upload.single("profilePicture"), async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists 
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    let profilePicturePath = "";
+    if (req.file) {
+      profilePicturePath = `assets/${req.file.filename}`;
     }
 
     // Create new user
-    const user = new User({ name, email, password });
+    const user = new User({
+      name,
+      email,
+      password,
+      profilePicture: profilePicturePath
+    });
     await user.save();
 
     // Generate token
     const token = generateToken(user._id);
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        profilePicture: user.profilePicture,
         bio: user.bio,
         status: user.status
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
@@ -97,6 +124,7 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        profilePicture: user.profilePicture,
         bio: user.bio,
         status: user.status
       }

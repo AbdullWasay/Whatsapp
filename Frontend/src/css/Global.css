@@ -1,0 +1,21 @@
+/* Light Theme */
+:root {
+  --bg-color: #25d366   ;
+  --text-color: #ffffff;
+  --primary-color: #ffffff;
+  --hover-color: #ffffff;
+  --secondary-color:#14b22b33;
+     --chat-color:rgb(232, 235, 231);
+
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --bg-color: #181818;
+  --text-color: #ffffff;
+  --primary-color: #2f2d2d33;
+  --hover-color: #ffffff;
+  --secondary-color:#FFFFFF33;
+
+    --chat-color:#00000033;
+}

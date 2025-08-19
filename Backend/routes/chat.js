@@ -11,7 +11,7 @@ router.get('/',auth,async(req,res)=>{
         const chats = await Chat.find({
             members:req.user._id
         })
-        .populate('members', 'name email bio status lastSeen')
+        .populate('members', 'name email profilePicture bio status lastSeen')
         .populate('lastMessage.messageId')
         .sort({updatedAt:-1});
         res.json(chats)
@@ -28,7 +28,7 @@ router.get('/:chatId', auth, async (req, res) => {
     const chat = await Chat.findOne({
       _id: req.params.chatId,
       members: req.user._id
-    }).populate('members', 'name email bio status lastSeen');
+    }).populate('members', 'name email profilePicture bio status lastSeen');
 
     if (!chat) {
       return res.status(404).json({ message: 'Chat not found' });
@@ -55,7 +55,7 @@ router.post('/', auth, async (req, res) => {
       const existingChat = await Chat.findOne({
         isGroup: false,
         members: { $all: allMembers, $size: 2 }
-      }).populate('members', 'name email bio status lastSeen');
+      }).populate('members', 'name email profilePicture bio status lastSeen');
 
       if (existingChat) {
         return res.json(existingChat);
@@ -74,7 +74,7 @@ router.post('/', auth, async (req, res) => {
     await chat.save();
 
     const populatedChat = await Chat.findById(chat._id)
-      .populate('members', 'name email bio status lastSeen');
+      .populate('members', 'name email profilePicture bio status lastSeen');
 
     res.status(201).json(populatedChat);
   } catch (error) {
@@ -121,7 +121,7 @@ router.post('/:chatId/add-members', auth, async (req, res) => {
 
     // Populate the updated chat
     const updatedChat = await Chat.findById(chatId)
-      .populate('members', 'name email bio status lastSeen');
+      .populate('members', 'name email profilePicture bio status lastSeen');
 
     res.json({
       message: 'Members added successfully',
@@ -132,5 +132,46 @@ router.post('/:chatId/add-members', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+
+
+// // Remove member from group
+// router.delete('/:chatId/remove-member', auth, async (req, res) => {
+//   try {
+//     const { chatId } = req.params;
+//     const { memberIds } = req.body;
+
+//     if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+//       return res.status(400).json({ message: 'Member IDs are required' });
+//     }
+
+//     // Find the chat and verify it's a group
+//     const chat = await Chat.findOne({
+//       _id: chatId,
+//       isGroup: true,
+//       members: req.user._id
+//     });
+
+//     if (!chat) {
+//       return res.status(404).json({ message: 'Group chat not found or you are not a member' });
+//     }
+
+//     chat.members = chat.members.filter(id => id.toString() !== memberId);
+//       chat.updatedAt = new Date();
+//       await chat.save();
+
+//     // Populate the updated chat
+//     const updatedChat = await Chat.findById(chatId)
+//       .populate('members', 'name email bio status lastSeen');
+
+//     res.json({
+//       message: 'Member removed successfully',
+//       chat: updatedChat,
+//       addedMembers: chat.members
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// });
 
 module.exports = router;

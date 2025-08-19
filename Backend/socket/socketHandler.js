@@ -174,6 +174,69 @@ const handleConnection = (io) => {
       }
     });
 
+
+
+    //----------------------------Remove Member------------------------------
+
+    //     // Handle adding members to group
+    // socket.on('RemoveGroupMember', async (data) => {
+    //   try {
+    //     const { chatId, memberIds } = data;
+
+    //     console.log('Socket: Removing member  group', { chatId, memberIds, userId: socket.userId });
+
+    //     // Verify user is member of the group
+    //     const chat = await Chat.findOne({
+    //       _id: chatId,
+    //       isGroup: true,
+    //       members: socket.userId
+    //     });
+
+    //     if (!chat) {
+    //       console.log('Socket: Group not found or user not a member');
+    //       socket.emit('error', { message: 'Group not found or you are not a member' });
+    //       return;
+    //     }
+
+    //     console.log('Socket: Current chat members:', chat.members.map(m => m.toString()));
+
+    //     //filter and uptade members with all existing except the one that is being removed
+    
+
+    //     chat.members = chat.members.filter(id => id.toString() !== memberId);
+    //     chat.updatedAt = new Date();
+    //     await chat.save();
+
+    //     // Remove member from the chat room
+    
+
+    //     const memberSocketId = connectedUsers.get(memberId);
+    //         if (memberSocketId) {
+    //           const memberSocket = io.sockets.sockets.get(memberSocketId);
+    //           if (memberSocket) {
+    //             memberSocket.leave(chatId);
+    //           }
+    //         }
+
+
+
+    //     // Emit to all users in the chat (including new members)
+    //     io.to(chatId).emit('groupMemberRemoved', {
+    //       chatId,
+    //       removedMember: memberIds,
+    //       removedBy: socket.userId
+    //     });
+
+    //     console.log(`Memberremoved from group ${chatId} by ${socket.user.name}`);
+    //   } catch (error) {
+    //     socket.emit('error', { message: 'Failed to remove member' });
+    //     console.error('remove member error:', error);
+    //   }
+    // });
+
+ 
+
+
     // Handle disconnect
     socket.on('disconnect', async () => {
       console.log(`User ${socket.user.name} disconnected`);

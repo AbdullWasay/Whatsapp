@@ -8,27 +8,43 @@ const UserProfile = ({ onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    bio: user?.bio || ''
+    bio: user?.bio || '',
+    profilePicture: null
   });
-  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(
+    user?.profilePicture ? `${process.env.REACT_APP_BACKEND_URL}${user.profilePicture}` : null
+  );
   const [saving, setSaving] = useState(false);
 
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData({ ...formData, profilePicture: e.target.files[0] });
+      setPreview(URL.createObjectURL(e.target.files[0]));
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.put(process.env.REACT_APP_BACKEND_URL+'api/user/profile', formData);
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("bio", formData.bio);
+      if (formData.profilePicture) {
+        data.append("profilePicture", formData.profilePicture);
+      }
+
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}api/user/profile`,
+        data,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
       setIsEditing(false);
-      // Update user context
-      window.location.reload();
+      window.location.reload(); // reload to reflect new pic
     } catch (error) {
       console.error('Save failed:', error);
       alert('Failed to update profile');
@@ -37,31 +53,29 @@ const UserProfile = ({ onClose }) => {
     }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      name: user?.name || '',
-      bio: user?.bio || ''
-    });
-    setIsEditing(false);
-  };
-
   return (
     <div className="profile-overlay">
       <div className="profile-modal">
         <div className="profile-header">
-          <button className="back-button" onClick={onClose}>
-            back
-          </button>
+          <button className="edit-button" onClick={onClose}>back</button>
           <h2>Profile</h2>
-          <button 
-            className="edit-button"
-            onClick={() => setIsEditing(!isEditing)}
-          >
+          <button className="edit-button" onClick={() => setIsEditing(!isEditing)}>
             {isEditing ? 'Cancel' : 'Edit'}
           </button>
         </div>
 
         <div className="profile-content">
+          <div className="profile-picture">
+            <img src={preview || "/default-avatar.png"} alt="Profile" />
+            {isEditing && (
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={handleImageChange}
+              />
+            )}
+          </div>
+
           <div className="profile-fields">
             <div className="field-group">
               <label>Name</label>
@@ -101,23 +115,14 @@ const UserProfile = ({ onClose }) => {
               <label>Email</label>
               <div className="field-value">{user?.email}</div>
             </div>
-
-     
           </div>
 
           {isEditing && (
             <div className="profile-actions">
-              <button 
-                className="save-btn"
-                onClick={handleSave}
-                disabled={saving}
-              >
+              <button className="save-btn" onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving...' : 'Save'}
               </button>
-              <button 
-                className="cancel-btn"
-                onClick={handleCancel}
-              >
+              <button className="cancel-btn" onClick={() => setIsEditing(false)}>
                 Cancel
               </button>
             </div>

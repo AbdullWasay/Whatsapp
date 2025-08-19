@@ -81,15 +81,27 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
     if (chat.isGroup) {
       return chat.groupName;
     } else {
-      const otherMember = chat.members.find(member => member._id !== currentUser._id);
+      const otherMember = chat.members.find(member => member.name !== currentUser.name);
       return otherMember?.name || 'Unknown User';
     }
   };
 
+  const getProfilePicture = (chat) => {
+  if (chat.isGroup) {
+    return process.env.REACT_APP_BACKEND_URL+'assets/group.png';
+  } else {
+    const otherMember = chat.members.find(member => member.name !== currentUser.name);
+    if (otherMember?.profilePicture) {
+      return `${process.env.REACT_APP_BACKEND_URL}${otherMember.profilePicture}`;
+    }
+    return null;
+  }
+};
+
   const getOnlineStatus = () => {
     if (chat.isGroup) return null;
     
-    const otherMember = chat.members.find(member => member._id !== currentUser._id);
+    const otherMember = chat.members.find(member => member.name !== currentUser.name);
     if (otherMember?.status === 'online') {
       return 'online';
     } else if (otherMember?.lastSeen) {
@@ -111,6 +123,24 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
   return (
     <div className="chat-window">
       <div className="chat-window-header">
+
+        <div className="chat-avatar-wrapper">
+  <div className="chat-avatar">
+    {getProfilePicture(chat) ? (
+    <img 
+  src={getProfilePicture(chat)} 
+  alt="profile" 
+/>
+
+    ) : (
+      <div className="avatar-placeholder">
+        {getChatName(chat).charAt(0).toUpperCase()}
+      </div>
+    )}
+  </div>
+
+</div>
+
         <div className="chat-info">
           <h2>{getChatName()}</h2>
           <p className="status">{getOnlineStatus()}</p>

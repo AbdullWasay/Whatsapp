@@ -1,5 +1,4 @@
 import '../../css/ChatList.css';
-
 const ChatList = ({ chats, selectedChat, onChatSelect, currentUser }) => {
   const formatTime = (date) => {
     const now = new Date();
@@ -23,6 +22,19 @@ const ChatList = ({ chats, selectedChat, onChatSelect, currentUser }) => {
       return otherMember?.name || 'Unknown User';
     }
   };
+
+
+const getProfilePicture = (chat) => {
+  if (chat.isGroup) {
+      return process.env.REACT_APP_BACKEND_URL+'assets/group.png';
+  } else {
+    const otherMember = chat.members.find(member => member.name !== currentUser.name);
+    if (otherMember?.profilePicture) {
+      return `${process.env.REACT_APP_BACKEND_URL}${otherMember.profilePicture}`;
+    }
+    return null;
+  }
+};
 
 
 
@@ -54,15 +66,25 @@ const ChatList = ({ chats, selectedChat, onChatSelect, currentUser }) => {
             className={`chat-item ${selectedChat?._id === chat._id ? 'selected' : ''}`}
             onClick={() => onChatSelect(chat)}
           >
-            <div className="chat-avatar">
-             
-                <div className="avatar-placeholder">
-                  {getChatName(chat).charAt(0).toUpperCase()}
-                </div>
-            
-              {getOnlineStatus(chat) && <div className="online-indicator"></div>}
-            </div>
-            
+<div className="chat-avatar-wrapper">
+  <div className="chat-avatar">
+    {getProfilePicture(chat) ? (
+    <img 
+  src={getProfilePicture(chat)} 
+  alt="profile" 
+/>
+
+    ) : (
+      <div className="avatar-placeholder">
+        {getChatName(chat).charAt(0).toUpperCase()}
+      </div>
+    )}
+  </div>
+
+  {getOnlineStatus(chat) && <div className="online-indicator"></div>}
+</div>
+
+
             <div className="chat-info">
               <div className="chat-header-2">
                 <h3 className={`chat-name ${chat.isGroup ? 'group' : ''}`}>

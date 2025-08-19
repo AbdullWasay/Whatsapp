@@ -114,7 +114,7 @@ const GroupMemberSearch = ({ onClose, onAddMembers, currentMembers, chatId }) =>
       <div className="group-member-search-modal">
         <div className="group-member-search-header">
           <h2>Add Group Members</h2>
-          <button className="close-button" onClick={onClose}>
+          <button className="close-button-group" onClick={onClose}>
             ✕
           </button>
         </div>
@@ -185,9 +185,9 @@ const GroupMemberSearch = ({ onClose, onAddMembers, currentMembers, chatId }) =>
           )}
         </div>
 
-        <div className="actions">
+        <div className="actions-group">
           <button
-            className="add-members-btn"
+            className="add-members-btn-group"
             onClick={handleAddMembers}
             disabled={selectedUsers.length === 0}
           >

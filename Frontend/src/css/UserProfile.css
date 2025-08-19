@@ -28,8 +28,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background: #25d366;
-  color: white;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .back-button {
@@ -244,6 +244,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.2s ease;
+  margin-bottom: 100px;
 }
 
 .save-btn:hover:not(:disabled) {
@@ -265,6 +266,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.2s ease;
+  margin-bottom: 100px;
 }
 
 .cancel-btn:hover {
@@ -311,4 +313,19 @@
   .profile-picture-placeholder {
     font-size: 2rem;
   }
+}
+
+.profile-picture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.profile-picture img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
 }

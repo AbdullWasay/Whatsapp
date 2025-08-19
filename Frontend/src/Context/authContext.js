@@ -104,43 +104,43 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
+const register = async (formData) => {
+  try {
+    const response = await axios.post(
+      process.env.REACT_APP_BACKEND_URL + "api/auth/register",
+      formData, 
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
-  const register = async (name, email, password) => {
-    try {
-      console.log('Making registration request to:', process.env.REACT_APP_BACKEND_URL+'api/auth/register');
-      console.log('Request data:', { name, email, password: password.length + ' chars' });
+    dispatch({
+      type: "LOGIN_SUCCESS",
+      payload: {
+        user: response.data.user,
+        token: response.data.token,
+      },
+    });
 
-      const response = await axios.post(process.env.REACT_APP_BACKEND_URL+'api/auth/register', {
-        name,
-        email,
-        password
-      });
+    return { success: true };
+  } catch (error) {
+    console.error("Registration error details:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+    });
 
-      console.log('Registration response:', response.data);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Registration failed",
+    };
+  }
+};
 
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: {
-          user: response.data.user,
-          token: response.data.token
-        }
-      });
 
-      return { success: true };
-    } catch (error) {
-      console.error('Registration error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        statusText: error.response?.statusText
-      });
-
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Registration failed'
-      };
-    }
-  };
 
   const logout = async () => {
     try {
