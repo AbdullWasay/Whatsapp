@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useAuth } from '../../Context/authContext';
 import { useSocket } from '../../Context/socketContext';
 import '../../css/Chat.css';
@@ -24,50 +25,65 @@ const token = localStorage.getItem('token');
   const { socket } = useSocket();
 
 
-  useEffect(() => {
-    loadChats();
-  }, []);
+
 
   useEffect(() => {
     if (socket) {
-      socket.on('newMessage', (message) => {
-        if (selectedChat && message.chatId === selectedChat._id) {
-          setMessages(prev => [...prev, message]);
-        }
-        
-        // Update chat list with new message
-        setChats(prev => prev.map(chat => 
-          chat._id === message.chatId 
-            ? { ...chat, lastMessage: { messageId: message }, updatedAt: new Date() }
-            : chat
-        ));
-      });
+  socket.on('newMessage', (message) => {
+  if (selectedChat && message.chatId === selectedChat._id) {
+    setMessages(prev => [...prev, message]);
+  }
 
-      socket.on('userStatusUpdate', (data) => {
-        setChats(prev => prev.map(chat => ({
-          ...chat,
-          members: chat.members.map(member =>
-            member._id === data.userId
-              ? { ...member, status: data.status, lastSeen: data.lastSeen }
-              : member
-          )
-        })));
+  // Update chat list
+  setChats(prev => {
+    const updated = prev.map(chat =>
+      chat._id === message.chatId
+        ? { ...chat, lastMessage: { messageId: message }, updatedAt: new Date() }
+        : chat
+    );
+
+    // Move updated chat to top
+    const movedChat = updated.find(c => c._id === message.chatId);
+    const others = updated.filter(c => c._id !== message.chatId);
+    return movedChat ? [movedChat, ...others] : updated;
+  });
+});
+
+
+      socket.on("chat-created", newChat => {
+      setChats(prev => {
+        const exists = prev.some(chat => chat._id === newChat._id);
+        if (exists) return prev;
+        return [newChat, ...prev];
       });
+    });
+  
+
+socket.on('userStatusUpdate', (data) => {
+  setChats(prevChats => {
+    return prevChats.map(chat => {
+      const memberIndex = chat.members.findIndex(m => m.name === data.name);
+      if (memberIndex === -1) return chat;
+      // ^ user is not the member of the chat so dont update that!
+
+      const updatedMembers = [...chat.members];
+      updatedMembers[memberIndex] = {
+        ...updatedMembers[memberIndex],
+        status: data.status,
+        lastSeen: data.lastSeen
+      };
+
+      return { ...chat, members: updatedMembers };
+    });
+  });
+});
+
+
 
       socket.on('groupMembersAdded', (data) => {
         console.log('Frontend: Received groupMembersAdded event', data);
 
-        if (selectedChat && selectedChat._id === data.chatId) {
-          // Reload the selected chat to get updated member list
-          loadChatDetails(data.chatId);
-        }
-
-        // Update chat list
-        setChats(prev => prev.map(chat =>
-          chat._id === data.chatId
-            ? { ...chat, updatedAt: new Date() }
-            : chat
-        ));
+       
       });
 
       socket.on('error', (error) => {
@@ -77,27 +93,30 @@ const token = localStorage.getItem('token');
 
       return () => {
         socket.off('newMessage');
-        socket.off('userStatusUpdate');
         socket.off('groupMembersAdded');
         socket.off('error');
+        socket.off("chat-created");
       };
     }
   }, [socket, selectedChat]);
 
-  const loadChats = async () => {
-    try {
-      const response = await axios.get(process.env.REACT_APP_BACKEND_URL+'api/chat', {
-  headers: {
-    Authorization: `Bearer ${token}`
+
+const loadChats = useCallback(async () => {
+  try {
+    const response = await axios.get(process.env.REACT_APP_BACKEND_URL+'api/chat', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setChats(response.data);
+  } catch (error) {
+    console.error('Error loading chats:', error);
+  } finally {
+    setLoading(false);
   }
-});
-      setChats(response.data);
-    } catch (error) {
-      console.error('Error loading chats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+}, [token]); // dependencies
+
+useEffect(() => {
+  loadChats();
+}, [loadChats]);
 
   const loadMessages = async (chatId) => {
     try {
@@ -131,26 +150,7 @@ const token = localStorage.getItem('token');
     }
   };
 
-  const loadChatDetails = async (chatId) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}api/chat/${chatId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (selectedChat && selectedChat._id === chatId) {
-        setSelectedChat(response.data);
-      }
-
-      // Update the chat in the chats list
-      setChats(prev => prev.map(chat =>
-        chat._id === chatId ? response.data : chat
-      ));
-    } catch (error) {
-      console.error('Error loading chat details:', error);
-    }
-  };
+ 
 
   const handleCreateChat = async (userIds, isGroup = false, groupName = '', groupPicture = '') => {
     try {
@@ -167,10 +167,31 @@ const token = localStorage.getItem('token');
       }
 
       const response = await axios.post(process.env.REACT_APP_BACKEND_URL+'api/chat', chatData);
+   
+    setChats(prev => {
+      // check if chat already exists in state
+      const exists = prev.some(chat => chat._id === response.data._id);
+      if (exists) {
+        // if exists, update instead of adding duplicate
+        return prev.map(chat => chat._id === response.data._id ? response.data : chat);
+      }
+      return [response.data, ...prev];
+    });
 
-      setChats(prev => [response.data, ...prev]);
+
+    if (socket) {
+      socket.emit("chat-created", {
+        chat: response.data,
+        members: response.data.members.map(m => m._id) // or just response.data.members
+      });
+    }
+
+
       setShowUserSearch(false);
       handleChatSelect(response.data);
+
+
+      
     } catch (error) {
       console.error('Error creating chat:', error);
     }

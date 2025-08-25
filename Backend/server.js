@@ -1,7 +1,7 @@
 require('dotenv').config();
 const http = require('http');
 const socketIo = require('socket.io');
-const connectDB = require('./config/database');
+const mysqlDB = require('./config/database');
 const express = require('express');
 const authRoutes = require('./routes/auth');
 const { handleConnection } = require('./socket/socketHandler');
@@ -9,9 +9,9 @@ const chatRoutes = require('./routes/chat');
 const messagesRoutes = require('./routes/messages');
 const userRoutes = require('./routes/user');
 const cors = require('./config/cors');
-
+mysql2 = require('mysql2');
 const app = express();
-connectDB();
+mysqlDB;
 
 // Middleware
 app.use(express.json());
@@ -46,3 +46,5 @@ const io = socketIo(server, {
 handleConnection(io);
 
 server.listen(process.env.BACKEND_PORT, () => console.log(`Server running on port ${process.env.BACKEND_PORT}`));
+
+module.exports = { app, server };

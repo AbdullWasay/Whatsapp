@@ -22,6 +22,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
+
 .user-search-header {
   display: flex;
   justify-content: space-between;
@@ -126,6 +127,8 @@
 .user-item:last-child {
   border-bottom: none;
 }
+
+
 
 .user-item .user-avatar {
   width: 50px;

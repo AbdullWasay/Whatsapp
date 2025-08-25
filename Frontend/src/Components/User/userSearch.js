@@ -72,6 +72,16 @@ const UserSearch = ({ onClose, onCreateChat }) => {
     }
   };
 
+  const getProfilePicture = (user) => {
+  
+    if (user?.profilePicture) {
+      return `${process.env.REACT_APP_BACKEND_URL}${user.profilePicture}`;
+    }
+    return null;
+  
+};
+
+
   const handleCreateChat = () => {
     if (selectedUsers.length === 1) {
       // Create individual chat
@@ -136,13 +146,21 @@ const UserSearch = ({ onClose, onCreateChat }) => {
               <div className="selected-users-list">
                 {selectedUsers.map(user => (
                   <div key={user._id} className="selected-user-item">
-                    <div className="user-avatar">
-                      
-                        <div className="avatar-placeholder">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                      
-                    </div>
+                    <div className="chat-avatar-wrapper">
+                     <div className="user-avatar">
+    {getProfilePicture(user) ? (
+    <img 
+  src={getProfilePicture(user)} 
+  alt="profile" 
+/>
+
+    ) : (
+      <div className="avatar-placeholder">
+       {user.name.charAt(0).toUpperCase()}
+      </div>
+    )}
+  </div>
+  </div>
                     <span className="user-name">{user.name}</span>
                   </div>
                 ))}
@@ -213,14 +231,25 @@ const UserSearch = ({ onClose, onCreateChat }) => {
                   className={`user-item ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleUserSelect(user)}
                 >
-                  <div className="user-avatar">
-                    
-                      <div className="avatar-placeholder">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    
-                    {user.status === 'online' && <div className="online-indicator"></div>}
-                  </div>
+
+<div className="chat-avatar-wrapper">
+                   <div className="user-avatar">
+    {getProfilePicture(user) ? (
+    <img 
+  src={getProfilePicture(user)} 
+  alt="profile" 
+/>
+
+    ) : (
+      <div className="avatar-placeholder">
+       {user.name.charAt(0).toUpperCase()}
+      </div>
+    )}
+     {user.status === 'online' && <div className="online-indicator"></div>}
+               
+  </div>
+</div>
+                 
                   <div className="user-info">
                     <h3>{user.name}</h3>
                     <p>{user.bio}</p>

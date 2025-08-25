@@ -4,7 +4,6 @@ import '../../css/ChatWindow.css';
 const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddMembers }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [typingUsers, setTypingUsers] = useState([]);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -12,23 +11,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on('userTyping', (data) => {
-        if (data.userId !== currentUser._id) {
-          if (data.isTyping) {
-            setTypingUsers(prev => [...prev.filter(u => u.userId !== data.userId), data]);
-          } else {
-            setTypingUsers(prev => prev.filter(u => u.userId !== data.userId));
-          }
-        }
-      });
 
-      return () => {
-        socket.off('userTyping');
-      };
-    }
-  }, [socket, currentUser._id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,11 +23,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
       onSendMessage(newMessage.trim());
       setNewMessage('');
       
-      // Stop typing indicator
-      if (socket && isTyping) {
-        socket.emit('typing', { chatId: chat._id, isTyping: false });
-        setIsTyping(false);
-      }
+    
     }
   };
 
@@ -134,7 +113,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
 
     ) : (
       <div className="avatar-placeholder">
-        {getChatName(chat).charAt(0).toUpperCase()}
+        {getChatName().charAt(0).toUpperCase()}
       </div>
     )}
   </div>
@@ -145,19 +124,21 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
           <h2>{getChatName()}</h2>
           <p className="status">{getOnlineStatus()}</p>
         </div>
-        {chat.isGroup && (
-          <div className="header-actions">
-            <button
-              className="add-members-btn"
-              onClick={onAddMembers}
-              title="Add Members"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-              </svg>
-            </button>
-          </div>
-        )}
+        {Boolean(chat.isGroup) && (
+  <div className="header-actions">
+    <button
+      className="add-members-btn"
+      onClick={onAddMembers}
+      title="Add Members"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+    </button>
+  </div>
+)}
+
+       
       </div>
 
       <div className="messages-container">
@@ -188,7 +169,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
               )}
 
               <div className="message-content">
-                {!isSent && chat.isGroup && showAvatar && (
+                {!isSent && Boolean(chat.isGroup) && showAvatar && (
                   <div className="sender-name">{message.senderId.name}</div>
                 )}
                 <div className="message-text">{message.content}</div>
@@ -197,22 +178,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, currentUser, socket, onAddM
             </div>
           );
         })}
-        
-        {typingUsers.length > 0 && (
-          <div className="typing-indicator">
-            <div className="typing-content">
-              <div className="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <span className="typing-text">
-                {typingUsers.map(u => u.userName).join(', ')} 
-                {typingUsers.length === 1 ? ' is' : ' are'} typing...
-              </span>
-            </div>
-          </div>
-        )}
+    
         
         <div ref={messagesEndRef} />
       </div>

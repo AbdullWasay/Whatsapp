@@ -27,6 +27,8 @@ const UserProfile = ({ onClose }) => {
     }
   };
 
+ 
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -57,7 +59,11 @@ const UserProfile = ({ onClose }) => {
     <div className="profile-overlay">
       <div className="profile-modal">
         <div className="profile-header">
-          <button className="edit-button" onClick={onClose}>back</button>
+
+          {!isEditing && (
+              <button className="edit-button" onClick={onClose}>back</button>
+         
+            )}
           <h2>Profile</h2>
           <button className="edit-button" onClick={() => setIsEditing(!isEditing)}>
             {isEditing ? 'Cancel' : 'Edit'}
@@ -65,16 +71,28 @@ const UserProfile = ({ onClose }) => {
         </div>
 
         <div className="profile-content">
-          <div className="profile-picture">
-            <img src={preview || "/default-avatar.png"} alt="Profile" />
-            {isEditing && (
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={handleImageChange}
-              />
-            )}
-          </div>
+<div className="profile-picture">
+<img 
+  src={preview || (process.env.REACT_APP_BACKEND_URL + 'assets/upload.png')} 
+  alt="Profile" 
+/>
+
+  {isEditing && (
+    <>
+      <div className="upload-overlay" onClick={() => document.getElementById("fileInput").click()}>
+        <i className="fas fa-camera upload-icon"></i>
+      </div>
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/png,image/jpeg"
+        onChange={handleImageChange}
+        style={{ display: "none" }}
+      />
+    </>
+  )}
+</div>
+
 
           <div className="profile-fields">
             <div className="field-group">

@@ -29,7 +29,8 @@ function AuthWrapper() {
 
   return (
     <SocketProvider>
-      <Chat />
+     <Chat />
+     
     </SocketProvider>
   );
 }

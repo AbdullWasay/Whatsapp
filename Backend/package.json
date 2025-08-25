@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +16,13 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.1",
     "multer": "^2.0.2",
-    "socket.io": "^4.8.1"
+    "mysql2": "^3.14.3",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "supertest": "^7.1.4"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0",
+    "jest": "^30.0.5"
   }
 }

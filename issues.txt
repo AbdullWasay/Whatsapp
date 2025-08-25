@@ -1,0 +1,10 @@
+DONE- If there is no profile initially, profile is not updated
+DONE- need to fix ui for choose file
+DONE- cancel back 2 buttons when editting profile
+DONE- profile picture while registering is working but not during update
+- theme changes
+DONE- chat order should be updated in real time, you have to reload to see updated chat order
+DONE- when you create a new chat, last message sis not updated
+DONE- Avatar not bEing shown in edit progile(if there is no profile picture)
+DONE- highlight unread messages differentlty
+DONE- Unread messages
